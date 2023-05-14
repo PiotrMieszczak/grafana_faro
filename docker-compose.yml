@@ -1,0 +1,34 @@
+version: '3'
+networks:
+   monitoring:
+services:
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - /home/pmieszczak/projects/rum_poc/loki:/etc/loki
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - monitoring
+  grafana-agent:
+    image: grafana/agent:latest
+    volumes:
+      - /home/pmieszczak/projects/rum_poc/agent:/etc/agent
+    command: -config.file=/etc/agent/agent-config.yml
+    ports:
+      - '12345:12345'
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+  grafana:
+    image: grafana/grafana:latest
+    user: "1000"
+    volumes:
+      - /home/pmieszczak/projects/rum_poc/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - monitoring
